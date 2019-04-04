@@ -2,9 +2,7 @@
 # I tested this code with Python 2.7
 # This Lambda code snippet demos how to load data from a CSV file in S3 bucket to DynamoDB triggered by S3 file upload/creation event.
 # It uses OKTA event logs as an example.
-#
-# TODO: It needs some more work to handle large volume file.
-#
+# You will have to increase Lambda timeout limit if you are loading large volume of data.
 
 import boto3
 import json
@@ -35,7 +33,14 @@ def lambda_handler(event, context):
     
     counter = 0
     
-    with table.batch_writer() as batch:
+    #
+    # For better performace,
+    # use batch_writer which automatically handles buffering and reduces # of inserts 
+    # 
+    # The batch writer can help to de-duplicate request by specifying 
+    # overwrite_by_pkeys=['partition_key', 'sort_key'] if you want to bypass no duplication limitation of single batch write request 
+    # as botocore.exceptions.ClientError: An error occurred (ValidationException) when calling the BatchWriteItem operation: Provided list of item keys contains duplicates.
+    with table.batch_writer(overwrite_by_pkeys=['actor.id', 'timestamp']) as batch:
         
         for row in rows:
             
@@ -56,7 +61,7 @@ def lambda_handler(event, context):
             
             counter = counter + 1
     
-        print "total # of items added: ", counter, "\n"
+        print "total # of items added (assuming no duplicates): ", counter, "\n"
         
 #
 # Hardcode header/columns here
