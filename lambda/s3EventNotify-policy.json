@@ -3,24 +3,26 @@
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": [
-                "kms:Decrypt",
-                "firehose:PutRecord",
-                "firehose:PutRecordBatch"
-            ],
+            "Action": "sns:*",
+            "Resource": "arn:aws:sns:*:*:datafile-notify"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "s3:*",
             "Resource": [
-                "arn:aws:firehose:eu-west-1:123456789012:deliverystream/*",
-                "arn:aws:kms:eu-west-1:123456789012:key/*"
+                "arn:aws:s3::*:datafile-*"
             ]
         },
         {
             "Effect": "Allow",
             "Action": [
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
+                "dynamodb:BatchWriteItem",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:PutItem"
             ],
-            "Resource": "arn:aws:logs:*:123456789012:*"
+            "Resource": [
+                "arn:aws:dynamodb:*:*:table/datafile-*"
+            ]
         }
     ]
 }
